@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { usersService, registerSchema } from "../services/users-service";
+import { usersService } from "../services/users-service";
 
 export const usersRoute = new Elysia({ prefix: "/api" })
   .post(
@@ -30,6 +30,29 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         name: t.String({ minLength: 1 }),
         email: t.String({ format: "email" }),
         password: t.String({ minLength: 8 }),
+      }),
+    }
+  )
+  .post(
+    "/users/login",
+    async ({ body, set }) => {
+      try {
+        const result = await usersService.loginUser(body as any);
+        return result;
+      } catch (error: any) {
+        if (error.message === "email atau password salah") {
+          set.status = 401;
+          return { error: error.message };
+        }
+
+        set.status = 400;
+        return { error: "invalid request body" };
+      }
+    },
+    {
+      body: t.Object({
+        email: t.String({ format: "email" }),
+        password: t.String({ minLength: 1 }),
       }),
     }
   );

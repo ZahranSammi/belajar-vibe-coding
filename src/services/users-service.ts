@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { users } from "../db/schema";
+import { users, sessions } from "../db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { z } from "zod";
@@ -10,7 +10,13 @@ export const registerSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
+});
+
 export type RegisterRequest = z.infer<typeof registerSchema>;
+export type LoginRequest = z.infer<typeof loginSchema>;
 
 export class UsersService {
   async registerUser(data: RegisterRequest) {
@@ -41,6 +47,41 @@ export class UsersService {
     });
 
     return { data: "OK" };
+  }
+
+  async loginUser(data: LoginRequest) {
+    // 1. Sanitize input
+    const email = data.email.trim().toLowerCase();
+    const password = data.password;
+
+    // 2. Find user by email
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1)
+      .then((res) => res[0]);
+
+    if (!user) {
+      throw new Error("email atau password salah");
+    }
+
+    // 3. Check password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error("email atau password salah");
+    }
+
+    // 4. Generate token
+    const token = crypto.randomUUID();
+
+    // 5. Save session
+    await db.insert(sessions).values({
+      token,
+      userId: user.id,
+    });
+
+    return { data: token };
   }
 }
 
