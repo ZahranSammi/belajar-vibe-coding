@@ -5,6 +5,7 @@ export const users = pgTable("users", {
   name: varchar("name", { length: 256 }).notNull(),
   email: varchar("email", { length: 256 }).notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export type User = typeof users.$inferSelect;
