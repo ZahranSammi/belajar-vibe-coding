@@ -76,8 +76,13 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         const result = await usersService.getCurrentUser(token);
         return result;
       } catch (error: any) {
-        set.status = 401;
-        return { error: "Unauthorized" };
+        if (error.message === "Unauthorized") {
+          set.status = 401;
+          return { error: "Unauthorized" };
+        }
+        
+        set.status = 500;
+        return { error: "Internal Server Error" };
       }
     }
   )
