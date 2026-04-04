@@ -81,4 +81,30 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         return { error: "Unauthorized" };
       }
     }
+  )
+  .get(
+    "/users/logout",
+    async ({ headers, set }) => {
+      const authHeader = headers.authorization;
+      
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+
+      const token = authHeader.split(" ")[1];
+      
+      if (!token) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+
+      try {
+        const result = await usersService.logout(token);
+        return result;
+      } catch (error: any) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+    }
   );

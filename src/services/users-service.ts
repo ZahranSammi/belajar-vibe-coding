@@ -104,6 +104,19 @@ export class UsersService {
 
     return { data: result };
   }
+
+  async logout(token: string) {
+    const deletedSession = await db
+      .delete(sessions)
+      .where(eq(sessions.token, token))
+      .returning();
+
+    if (deletedSession.length === 0) {
+      throw new Error("Unauthorized");
+    }
+
+    return { data: "OK" };
+  }
 }
 
 export const usersService = new UsersService();
