@@ -83,6 +83,27 @@ export class UsersService {
 
     return { data: token };
   }
+
+  async getCurrentUser(token: string) {
+    const result = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        createdAt: users.createdAt,
+      })
+      .from(sessions)
+      .innerJoin(users, eq(sessions.userId, users.id))
+      .where(eq(sessions.token, token))
+      .limit(1)
+      .then((res) => res[0]);
+
+    if (!result) {
+      throw new Error("Unauthorized");
+    }
+
+    return { data: result };
+  }
 }
 
 export const usersService = new UsersService();
