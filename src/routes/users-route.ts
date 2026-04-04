@@ -1,6 +1,12 @@
 import { Elysia, t } from "elysia";
 import { usersService } from "../services/users-service";
 
+// Helper function to extract Bearer token from Authorization header
+function extractBearerToken(authHeader: string | undefined): string | null {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+  return authHeader.split(" ")[1] || null;
+}
+
 export const usersRoute = new Elysia({ prefix: "/api" })
   .post(
     "/users",
@@ -59,15 +65,8 @@ export const usersRoute = new Elysia({ prefix: "/api" })
   .get(
     "/users/current",
     async ({ headers, set }) => {
-      const authHeader = headers.authorization;
-      
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        set.status = 401;
-        return { error: "Unauthorized" };
-      }
+      const token = extractBearerToken(headers.authorization);
 
-      const token = authHeader.split(" ")[1];
-      
       if (!token) {
         set.status = 401;
         return { error: "Unauthorized" };
@@ -82,18 +81,11 @@ export const usersRoute = new Elysia({ prefix: "/api" })
       }
     }
   )
-  .get(
+  .delete(
     "/users/logout",
     async ({ headers, set }) => {
-      const authHeader = headers.authorization;
-      
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        set.status = 401;
-        return { error: "Unauthorized" };
-      }
+      const token = extractBearerToken(headers.authorization);
 
-      const token = authHeader.split(" ")[1];
-      
       if (!token) {
         set.status = 401;
         return { error: "Unauthorized" };
@@ -103,8 +95,14 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         const result = await usersService.logout(token);
         return result;
       } catch (error: any) {
-        set.status = 401;
-        return { error: "Unauthorized" };
+        if (error.message === "Unauthorized") {
+          set.status = 401;
+          return { error: "Unauthorized" };
+        }
+
+        // Server/database error — don't mask as 401
+        set.status = 500;
+        return { error: "Internal Server Error" };
       }
     }
   );
