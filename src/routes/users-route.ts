@@ -27,14 +27,14 @@ export const usersRoute = new Elysia({ prefix: "/api" })
           return { error: "email sudah ada di database" };
         }
 
-        set.status = 400;
-        return { error: "invalid request body" };
+        set.status = 500;
+        return { error: "Internal Server Error" };
       }
     },
     {
       body: t.Object({
-        name: t.String({ minLength: 1 }),
-        email: t.String({ format: "email" }),
+        name: t.String({ minLength: 1, maxLength: 255 }),
+        email: t.String({ format: "email", maxLength: 255 }),
         password: t.String({ minLength: 8 }),
       }),
     }
@@ -51,13 +51,13 @@ export const usersRoute = new Elysia({ prefix: "/api" })
           return { error: error.message };
         }
 
-        set.status = 400;
-        return { error: "invalid request body" };
+        set.status = 500;
+        return { error: "Internal Server Error" };
       }
     },
     {
       body: t.Object({
-        email: t.String({ format: "email" }),
+        email: t.String({ format: "email", maxLength: 255 }),
         password: t.String({ minLength: 1 }),
       }),
     }
