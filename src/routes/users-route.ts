@@ -48,6 +48,11 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         email: t.String({ format: "email", maxLength: 255 }),
         password: t.String({ minLength: 8 }),
       }),
+      detail: {
+        tags: ["Users"],
+        summary: "Register New User",
+        description: "Creates a new user record in the database after validating constraints.",
+      },
     }
   )
   /**
@@ -75,6 +80,11 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         email: t.String({ format: "email", maxLength: 255 }),
         password: t.String({ minLength: 1 }),
       }),
+      detail: {
+        tags: ["Users"],
+        summary: "User Login",
+        description: "Authenticates credentials and returns a session token.",
+      },
     }
   )
   /**
@@ -103,6 +113,13 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         set.status = 500;
         return { error: "Internal Server Error" };
       }
+    },
+    {
+      detail: {
+        tags: ["Users"],
+        summary: "Get Current Profile",
+        description: "Fetch professional profile information based on an active session token.",
+      },
     }
   )
   /**
@@ -132,5 +149,12 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         set.status = 500;
         return { error: "Internal Server Error" };
       }
+    },
+    {
+      detail: {
+        tags: ["Users"],
+        summary: "Logout User",
+        description: "Revokes the session token and deletes it from the database.",
+      },
     }
   );
