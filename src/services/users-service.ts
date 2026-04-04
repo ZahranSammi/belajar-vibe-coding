@@ -19,6 +19,14 @@ export type RegisterRequest = z.infer<typeof registerSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
 
 export class UsersService {
+  /**
+   * Mendaftarkan pengguna (user) baru ke dalam sistem.
+   * Fungsi ini melakukan sanitasi input, mengecek apakah email sudah terdaftar,
+   * melakukan hashing pada password untuk keamanan, dan menyimpannya ke database.
+   * 
+   * @param data - Objek request yang berisi name, email, dan password.
+   * @returns Pesan konfirmasi objek {"data": "OK"}.
+   */
   async registerUser(data: RegisterRequest) {
     // 1. Sanitize input
     const name = data.name.trim();
@@ -49,6 +57,14 @@ export class UsersService {
     return { data: "OK" };
   }
 
+  /**
+   * Mengotentikasi pengguna dan membuat sesi baru.
+   * Fungsi ini memverifikasi keberadaan email dan mencocokkan password dengan hash di database.
+   * Jika berhasil, akan men-generate token (UUID) dan menyimpannya di tabel sessions.
+   * 
+   * @param data - Objek request yang berisi email dan password.
+   * @returns Token sesi login {"data": "<token>"}.
+   */
   async loginUser(data: LoginRequest) {
     // 1. Sanitize input
     const email = data.email.trim().toLowerCase();
@@ -84,6 +100,14 @@ export class UsersService {
     return { data: token };
   }
 
+  /**
+   * Mengambil profil pengguna yang sedang login berdasarkan token sesi.
+   * Fungsi ini melakukan penggabungan (JOIN) antara tabel sessions dan users 
+   * dan memastikan hanya me-return data esensial seperti id, name, email.
+   * 
+   * @param token - Bearer token aktif dari header pengguna.
+   * @returns Data profil user (tanpa password) di dalam objek {"data": {...}}.
+   */
   async getCurrentUser(token: string) {
     const result = await db
       .select({
@@ -105,6 +129,14 @@ export class UsersService {
     return { data: result };
   }
 
+  /**
+   * Menghapus sesi aktif pengguna berdasarkan token.
+   * Menghapus baris/record pada tabel sessions di database,
+   * yang secara efektif mencabut akses rahasia (logout).
+   * 
+   * @param token - Bearer token aktif.
+   * @returns Pesan konfirmasi objek {"data": "OK"}.
+   */
   async logout(token: string) {
     // 1. Delete session matching the provided token
     const deletedSession = await db
