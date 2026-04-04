@@ -104,6 +104,22 @@ export class UsersService {
 
     return { data: result };
   }
+
+  async logout(token: string) {
+    // 1. Delete session matching the provided token
+    const deletedSession = await db
+      .delete(sessions)
+      .where(eq(sessions.token, token))
+      .returning({ token: sessions.token });
+
+    // 2. If no session was found, the token is invalid
+    if (deletedSession.length === 0) {
+      throw new Error("Unauthorized");
+    }
+
+    // 3. Return success
+    return { data: "OK" };
+  }
 }
 
 export const usersService = new UsersService();
