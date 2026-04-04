@@ -53,6 +53,11 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         summary: "Register New User",
         description: "Creates a new user record in the database after validating constraints.",
       },
+      response: {
+        201: t.Object({ data: t.String() }),
+        409: t.Object({ error: t.String() }),
+        500: t.Object({ error: t.String() }),
+      },
     }
   )
   /**
@@ -84,6 +89,11 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         tags: ["Users"],
         summary: "User Login",
         description: "Authenticates credentials and returns a session token.",
+      },
+      response: {
+        200: t.Object({ data: t.String() }),
+        401: t.Object({ error: t.String() }),
+        500: t.Object({ error: t.String() }),
       },
     }
   )
@@ -120,6 +130,18 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         summary: "Get Current Profile",
         description: "Fetch professional profile information based on an active session token.",
       },
+      response: {
+        200: t.Object({
+          data: t.Object({
+            id: t.Number(),
+            name: t.String(),
+            email: t.String(),
+            createdAt: t.Date(),
+          }),
+        }),
+        401: t.Object({ error: t.String() }),
+        500: t.Object({ error: t.String() }),
+      },
     }
   )
   /**
@@ -155,6 +177,11 @@ export const usersRoute = new Elysia({ prefix: "/api" })
         tags: ["Users"],
         summary: "Logout User",
         description: "Revokes the session token and deletes it from the database.",
+      },
+      response: {
+        200: t.Object({ data: t.String() }),
+        401: t.Object({ error: t.String() }),
+        500: t.Object({ error: t.String() }),
       },
     }
   );
